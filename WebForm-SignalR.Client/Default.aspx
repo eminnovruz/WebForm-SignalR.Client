@@ -1,30 +1,46 @@
 ﻿<%@ Page Title="Home Page" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="WebForm_SignalR.Client._Default" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
-    <main>
-        <section class="row" aria-labelledby="aspnetTitle">
-            <h1 id="aspnetTitle">ASP.NET</h1>
-            <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS, and JavaScript.</p>
-            <p><a href="http://www.asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-        </section>
-
-        <!-- Notification display area -->
+    <main style="padding: 20px; background-color: #f5f5f5; font-family: Arial, sans-serif;">
         <section>
-            <h2>Notifications</h2>
-            <div id="notificationArea" style="border: 1px solid #ddd; padding: 10px; min-height: 50px;">
-                <!-- Notifications will appear here -->
+            <h2 style="color: #333;">Notifications</h2>
+            <div id="notificationArea" style="border: 1px solid #ddd; padding: 10px; min-height: 50px; border-radius: 4px; background-color: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
             </div>
         </section>
     </main>
 
-    <!-- Include SignalR script -->
+    <style>
+        .notification {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+        }
+
+        .notification.fade-out {
+            opacity: 0;
+        }
+
+        #notificationArea > div {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-left: 5px solid #007bff;
+            border-radius: 4px;
+        }
+    </style>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.9/signalr.min.js"></script>
     
-    <!-- Add SignalR connection and event handling script -->
     <script type="text/javascript">
         var connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7224/notificationHub").build();
-
-        console.log(connection)
 
         connection.start().then(function () {
             console.log("SignalR connected.");
@@ -32,13 +48,23 @@
             console.error("Connection error: ", err);
         });
 
-        // Handler for receiving notifications
         connection.on("ReceiveNotification", function (message) {
-            console.log(message)
             var notificationArea = document.getElementById("notificationArea");
-            var newNotification = document.createElement("div");
-            newNotification.innerHTML = message;
-            notificationArea.appendChild(newNotification);
+            var notificationDiv = document.createElement("div");
+            notificationDiv.textContent = message;
+            notificationArea.appendChild(notificationDiv);
+
+            var popupNotification = document.createElement("div");
+            popupNotification.className = "notification";
+            popupNotification.textContent = message;
+            document.body.appendChild(popupNotification);
+
+            setTimeout(function () {
+                popupNotification.classList.add("fade-out");
+                setTimeout(function () {
+                    popupNotification.remove();
+                }, 500);
+            }, 10000);
         });
     </script>
 </asp:Content>
